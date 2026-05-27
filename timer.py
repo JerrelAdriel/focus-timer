@@ -98,7 +98,7 @@ class Timer:
         self.remaining = WORK_MINS * 60
         self.total = WORK_MINS * 60
         self.state = "idle"   # idle | running | paused | stats
-        self.session_num = 0
+        self.session_num = get_stats()["today_count"]
         self._tick_ref = time.monotonic()
         self._prev_state = "idle"
 
