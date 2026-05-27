@@ -3,10 +3,30 @@
 """Focus Timer — Pomodoro timer with session tracking and daily stats."""
 
 import json
-import msvcrt
+import sys
 import time
 from datetime import date, datetime
 from pathlib import Path
+
+try:
+    import msvcrt
+    def kbhit():
+        return msvcrt.kbhit()
+    def getch():
+        return msvcrt.getch()
+except ImportError:
+    # Unix fallback
+    import tty, termios, select
+    def kbhit():
+        return select.select([sys.stdin], [], [], 0)[0] != []
+    def getch():
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            return sys.stdin.read(1).encode()
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 try:
     from rich import box
@@ -129,9 +149,9 @@ class Timer:
         return "work"
 
     def _poll_key(self) -> str | None:
-        if not msvcrt.kbhit():
+        if not kbhit():
             return None
-        ch = msvcrt.getch()
+        ch = getch()
         return {
             b' ': 'space', b'q': 'quit', b'Q': 'quit',
             b'n': 'new',   b'N': 'new',
